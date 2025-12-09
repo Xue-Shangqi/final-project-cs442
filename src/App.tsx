@@ -24,7 +24,13 @@ function App() {
         ingredients: [formData.get("ingredients")?.toString() || ""],
       });
       if (!errors) {
-        setResult(data?.body || "No data returned");
+        const responseBody = data?.body || "No data returned";
+        try {
+          const parsed = JSON.parse(responseBody);
+          setResult(parsed.generation || responseBody);
+        } catch {
+          setResult(responseBody);
+        }
       } else {
         console.log(errors);
       }

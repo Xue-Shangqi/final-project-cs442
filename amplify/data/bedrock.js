@@ -5,37 +5,27 @@ export function request(ctx) {
 ${ingredients.join(", ")}.`;
   // Return the request configuration
   return {
-    resourcePath: `/model/anthropic.claude-3-sonnet-20240229-v1:0/invoke`,
+    resourcePath: `/model/meta.llama3-8b-instruct-v1:0/invoke`,
     method: "POST",
     params: {
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        anthropic_version: "bedrock-2023-05-31",
-        max_tokens: 1000,
-        messages: [
-          {
-            role: "user",
-            content: [
-              {
-                type: "text",
-                text: `\n\nHuman: ${prompt}\n\nAssistant:`,
-              },
-            ],
-          },
-        ],
+        prompt: `<|begin_of_text|><|start_header_id|>user<|end_header_id|>\n${prompt}<|eot_id|><|start_header_id|>assistant<|end_header_id|>\n`,
+        max_gen_len: 1200,
+        temperature: 0.7,
+        top_p: 0.9
       }),
     },
   };
 }
 export function response(ctx) {
-  // Parse the response body
   const parsedBody = JSON.parse(ctx.result.body);
-  // Extract the text content from the response
-  const res = {
-    body: parsedBody.content[0].text,
-  };
-  // Return the response
-  return res;
+  const text =
+    parsedBody?.content?.[0]?.text ??
+    parsedBody?.completion ??
+    parsedBody?.message ??
+    JSON.stringify(parsedBody);
+  return { body: text };
 }
